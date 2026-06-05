@@ -37,6 +37,13 @@ export default function QuickLocationButton({
   const busy = status.kind === 'locating' || status.kind === 'saving';
 
   async function run() {
+    if (!window.isSecureContext) {
+      setStatus({
+        kind: 'error',
+        text: 'Konum yalnızca güvenli bağlantıda (HTTPS) çalışır. Yayındaki https adresinden dene.',
+      });
+      return;
+    }
     if (!('geolocation' in navigator)) {
       setStatus({ kind: 'error', text: 'Cihazın konum servisini desteklemiyor.' });
       return;
