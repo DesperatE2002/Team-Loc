@@ -56,13 +56,22 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <section>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          Merhaba {user?.full_name.split(' ')[0]} 👋
-        </h1>
-        <p className="text-sm text-slate-500">
-          Ekibin şu anki konumlarını aşağıdan takip edebilirsin.
-        </p>
+      <section className="flex items-center gap-4">
+        <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-100 text-lg font-bold text-brand-700 shadow-soft">
+          {user?.avatar_url ? (
+            <img src={user.avatar_url} alt={user.full_name} className="h-full w-full object-cover" />
+          ) : (
+            initials(user?.full_name ?? '')
+          )}
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            Merhaba {user?.full_name.split(' ')[0]} 👋
+          </h1>
+          <p className="text-sm text-slate-500">
+            Ekibin şu anki konumlarını aşağıdan takip edebilirsin.
+          </p>
+        </div>
       </section>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">

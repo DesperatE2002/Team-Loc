@@ -54,8 +54,16 @@ export default function Layout() {
                 {user?.position ?? 'Kullanıcı'}
               </div>
             </div>
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-brand-100 text-brand-700 font-bold">
-              {initials(user?.full_name ?? '')}
+            <div className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-100 text-brand-700 font-bold">
+              {user?.avatar_url ? (
+                <img
+                  src={user.avatar_url}
+                  alt={user.full_name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                initials(user?.full_name ?? '')
+              )}
             </div>
             <button
               onClick={() => {
