@@ -85,12 +85,28 @@ export default function QuickLocationButton({
 }
 
 function getPosition(): Promise<GeolocationPosition> {
-  return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(resolve, reject, {
-      enableHighAccuracy: true,
-      timeout: 12000,
-      maximumAge: 0,
+  // Dayanıklı strateji: önce hızlı/düşük hassasiyet (son 5 dk önbelleğe izin),
+  // zaman aşımı olursa yüksek hassasiyetle tekrar dene.
+  const lowAccuracy: PositionOptions = {
+    enableHighAccuracy: false,
+    timeout: 15000,
+    maximumAge: 300000,
+  };
+  const highAccuracy: PositionOptions = {
+    enableHighAccuracy: true,
+    timeout: 20000,
+    maximumAge: 0,
+  };
+
+  const attempt = (opts: PositionOptions) =>
+    new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, opts);
     });
+
+  return attempt(lowAccuracy).catch((err: GeolocationPositionError) => {
+    // İzin reddedildiyse tekrar denemenin anlamı yok
+    if (err && err.code === 1) throw err;
+    return attempt(highAccuracy);
   });
 }
 
