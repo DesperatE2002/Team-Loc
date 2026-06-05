@@ -3,7 +3,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { sql, type TripRow, type UserRow } from '../db.js';
 import { requireAuth } from '../auth.js';
-import { POSITIONS, publicUser } from './auth.js';
+import { publicUser } from './auth.js';
 
 const router = Router();
 
@@ -36,7 +36,6 @@ router.get('/team', async (_req, res) => {
 
 const updateMeSchema = z.object({
   full_name: z.string().min(2).max(80).optional(),
-  position: z.enum(POSITIONS).nullable().optional(),
   email: z.union([z.string().email(), z.literal('')]).nullable().optional(),
   avatar_url: z
     .string()
@@ -64,7 +63,6 @@ router.patch('/me', async (req, res) => {
   const u = current[0];
   const next = {
     full_name: data.full_name ?? u.full_name,
-    position: data.position !== undefined ? data.position : u.position,
     email: data.email !== undefined ? (data.email || null) : u.email,
     avatar_url: data.avatar_url !== undefined ? data.avatar_url : u.avatar_url,
   };
@@ -72,7 +70,6 @@ router.patch('/me', async (req, res) => {
   const rows = (await sql`
     UPDATE users SET
       full_name = ${next.full_name},
-      position = ${next.position},
       email = ${next.email},
       avatar_url = ${next.avatar_url}
     WHERE id = ${id}

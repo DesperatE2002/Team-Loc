@@ -1,16 +1,17 @@
 import { Navigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useAuth } from '../auth';
+import { isManager } from '../types';
 
 export default function ProtectedRoute({
   children,
-  requireAdmin = false,
+  requireManager = false,
 }: {
   children: ReactNode;
-  requireAdmin?: boolean;
+  requireManager?: boolean;
 }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  if (requireAdmin && user.role !== 'admin') return <Navigate to="/" replace />;
+  if (requireManager && !isManager(user.role)) return <Navigate to="/" replace />;
   return <>{children}</>;
 }

@@ -1,7 +1,23 @@
-export const POSITIONS = ['Müdür', 'Uzman', 'Mühendis', 'Teknisyen', 'Stajyer'] as const;
-export type Position = (typeof POSITIONS)[number];
+/** Uygulama rolleri (yetki düzeyine göre yüksekten düşüğe). */
+export const ROLES = ['admin', 'mudur', 'tekniker', 'uzman'] as const;
+export type Role = (typeof ROLES)[number];
 
-export type Role = 'admin' | 'member';
+export const ROLE_LABELS: Record<Role, string> = {
+  admin: 'Admin',
+  mudur: 'Müdür',
+  tekniker: 'Tekniker',
+  uzman: 'Uzman',
+};
+
+export function roleLabel(role: string | null | undefined): string {
+  if (!role) return 'Kullanıcı';
+  return ROLE_LABELS[role as Role] ?? role;
+}
+
+/** Yönetici seviyesi roller (admin / müdür) — kullanıcı yönetimi yetkisi. */
+export function isManager(role: string | null | undefined): boolean {
+  return role === 'admin' || role === 'mudur';
+}
 
 export type User = {
   id: number;
@@ -9,7 +25,7 @@ export type User = {
   sicil: string | null;
   email: string | null;
   full_name: string;
-  position: Position | null;
+  position: string | null;
   avatar_url: string | null;
   role: Role;
   created_at: string;

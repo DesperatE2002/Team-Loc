@@ -35,7 +35,7 @@ export default function App() {
         <Route
           path="yonetim"
           element={
-            <ProtectedRoute requireAdmin>
+            <ProtectedRoute requireManager>
               <AdminPage />
             </ProtectedRoute>
           }

@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
 import type { TeamMember } from '../types';
+import { roleLabel } from '../types';
 import { flagFor } from '../countries';
 import TeamMap from '../components/TeamMap';
+import QuickLocationButton from '../components/QuickLocationButton';
 import { useAuth } from '../auth';
 
 export default function DashboardPage() {
@@ -12,6 +14,15 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'domestic' | 'abroad'>('all');
   const [search, setSearch] = useState('');
+
+  async function loadTeam() {
+    try {
+      const d = await api<{ team: TeamMember[] }>('/api/users/team');
+      setTeam(d.team);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Hata');
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -154,16 +165,17 @@ export default function DashboardPage() {
         )}
       </section>
 
-      <section className="card p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 className="font-semibold text-slate-900">Konumun güncel mi?</h3>
-            <p className="text-sm text-slate-500">
-              Yurt içinde/dışında olduğunu profilinden tek tıkla güncelle.
-            </p>
-          </div>
-          <Link to="/profil" className="btn-primary">
-            Konumumu Güncelle
+      <section className="card flex flex-wrap items-center justify-between gap-3 bg-gradient-to-br from-brand-600 to-brand-700 p-6 text-white">
+        <div>
+          <h3 className="font-semibold">Konumun güncel mi?</h3>
+          <p className="text-sm text-white/80">
+            Tek dokunuşla bulunduğun yeri GPS'ten paylaş — uğraşmadan, anında.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <QuickLocationButton variant="light" onUpdated={loadTeam} />
+          <Link to="/profil" className="text-sm font-semibold text-white/90 underline-offset-4 hover:underline">
+            Detaylı düzenle
           </Link>
         </div>
       </section>
@@ -215,7 +227,7 @@ function MemberCard({ member }: { member: TeamMember }) {
         <div className="min-w-0 flex-1">
           <div className="truncate font-semibold text-slate-900">{member.full_name}</div>
           <div className="truncate text-xs text-slate-500">
-            {member.position ?? member.username}
+            {roleLabel(member.role)}
           </div>
         </div>
       </div>
@@ -247,8 +259,9 @@ function MemberCard({ member }: { member: TeamMember }) {
           <p className="mt-2 text-sm italic text-slate-600">“{trip.status_message}”</p>
         )}
         {trip && (
-          <div className="mt-2 text-xs text-slate-500">
-            {formatRange(trip.start_date, trip.end_date)}
+          <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+            <span>{formatRange(trip.start_date, trip.end_date)}</span>
+            {trip.updated_at && <span title={trip.updated_at}>{relativeTime(trip.updated_at)}</span>}
           </div>
         )}
       </div>
@@ -283,4 +296,18 @@ function formatRange(start: string, end: string | null): string {
 function formatTr(d: string): string {
   const date = new Date(d + 'T00:00:00');
   return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function relativeTime(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return '';
+  const diff = Date.now() - then;
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'az önce';
+  if (min < 60) return `${min} dk önce`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} sa önce`;
+  const day = Math.floor(hr / 24);
+  if (day < 30) return `${day} gün önce`;
+  return new Date(iso).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
 }

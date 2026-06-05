@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import type { TeamMember } from '../types';
+import { roleLabel } from '../types';
 import { findCountry, flagFor } from '../countries';
 
 type Props = {
@@ -202,9 +203,7 @@ export default function TeamMap({ team }: Props) {
                         <div className="font-medium text-sm leading-tight">
                           {m.full_name}
                         </div>
-                        {m.position && (
-                          <div className="text-[11px] text-slate-500">{m.position}</div>
-                        )}
+                        <div className="text-[11px] text-slate-500">{roleLabel(m.role)}</div>
                         {m.current_trip?.city && (
                           <div className="text-[11px] text-slate-500">
                             {m.current_trip.city}

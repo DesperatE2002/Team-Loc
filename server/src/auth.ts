@@ -1,11 +1,12 @@
 import jwt from 'jsonwebtoken';
 import type { Request, Response, NextFunction } from 'express';
 import { sql, type UserRow } from './db.js';
+import { isManager, type Role } from './roles.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-insecure-secret-change-me';
 const JWT_EXPIRES_IN = '7d';
 
-export type AuthPayload = { id: number; username: string; role: 'admin' | 'member' };
+export type AuthPayload = { id: number; username: string; role: Role };
 
 export function signToken(user: Pick<UserRow, 'id' | 'username' | 'role'>): string {
   return jwt.sign(
@@ -39,7 +40,7 @@ export async function requireAuth(
     const payload = jwt.verify(token, JWT_SECRET) as AuthPayload;
     const rows = (await sql`SELECT id, role FROM users WHERE id = ${payload.id}`) as {
       id: number;
-      role: 'admin' | 'member';
+      role: Role;
     }[];
     if (rows.length === 0) {
       res.status(401).json({ error: 'Kullanıcı bulunamadı' });
@@ -56,6 +57,15 @@ export async function requireAuth(
 export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
   if (req.user?.role !== 'admin') {
     res.status(403).json({ error: 'Bu işlem için admin yetkisi gerekli' });
+    return;
+  }
+  next();
+}
+
+/** Yönetici (admin veya müdür) yetkisi ister. */
+export function requireManager(req: Request, res: Response, next: NextFunction): void {
+  if (!isManager(req.user?.role)) {
+    res.status(403).json({ error: 'Bu işlem için yönetici (admin/müdür) yetkisi gerekli' });
     return;
   }
   next();

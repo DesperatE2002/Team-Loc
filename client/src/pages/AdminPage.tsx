@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api';
 import { useAuth } from '../auth';
-import { POSITIONS, type AdminUser, type Position, type Role } from '../types';
+import { ROLES, ROLE_LABELS, roleLabel, type AdminUser, type Role } from '../types';
 
 export default function AdminPage() {
   const { user: me } = useAuth();
@@ -148,16 +148,13 @@ export default function AdminPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="truncate font-semibold text-slate-900">{u.full_name}</span>
-                      {u.role === 'admin' && (
-                        <span className="badge bg-amber-100 text-amber-700">Admin</span>
-                      )}
+                      <RoleBadge role={u.role} />
                       {isSelf && (
                         <span className="badge bg-slate-100 text-slate-500">Sen</span>
                       )}
                     </div>
                     <div className="truncate text-xs text-slate-500">
-                      @{u.username} · Sicil: {u.sicil ?? '—'}
-                      {u.position ? ` · ${u.position}` : ''} · {u.trip_count} kayıt
+                      @{u.username} · Sicil: {u.sicil ?? '—'} · {u.trip_count} kayıt
                     </div>
                   </div>
 
@@ -167,8 +164,11 @@ export default function AdminPage() {
                     disabled={busyId === u.id}
                     onChange={(e) => changeRole(u, e.target.value as Role)}
                   >
-                    <option value="member">Üye</option>
-                    <option value="admin">Admin</option>
+                    {ROLES.map((r) => (
+                      <option key={r} value={r}>
+                        {ROLE_LABELS[r]}
+                      </option>
+                    ))}
                   </select>
 
                   <button
@@ -207,15 +207,13 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
     sicil: string;
     password: string;
     full_name: string;
-    position: Position;
     role: Role;
   }>({
     username: '',
     sicil: '',
     password: '',
     full_name: '',
-    position: 'Uzman',
-    role: 'member',
+    role: 'uzman',
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -232,7 +230,6 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
           sicil: form.sicil,
           password: form.password,
           full_name: form.full_name.trim() || undefined,
-          position: form.position,
           role: form.role,
         }),
       });
@@ -275,15 +272,15 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
         />
       </div>
       <div>
-        <label className="label">Pozisyon</label>
+        <label className="label">Rol</label>
         <select
           className="input"
-          value={form.position}
-          onChange={(e) => setForm((f) => ({ ...f, position: e.target.value as Position }))}
+          value={form.role}
+          onChange={(e) => setForm((f) => ({ ...f, role: e.target.value as Role }))}
         >
-          {POSITIONS.map((p) => (
-            <option key={p} value={p}>
-              {p}
+          {ROLES.map((r) => (
+            <option key={r} value={r}>
+              {ROLE_LABELS[r]}
             </option>
           ))}
         </select>
@@ -299,17 +296,6 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
           required
         />
       </div>
-      <div>
-        <label className="label">Rol</label>
-        <select
-          className="input"
-          value={form.role}
-          onChange={(e) => setForm((f) => ({ ...f, role: e.target.value as Role }))}
-        >
-          <option value="member">Üye</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
       {error && (
         <div className="sm:col-span-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
@@ -322,6 +308,16 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
       </div>
     </form>
   );
+}
+
+function RoleBadge({ role }: { role: Role }) {
+  const styles: Record<Role, string> = {
+    admin: 'bg-amber-100 text-amber-700',
+    mudur: 'bg-violet-100 text-violet-700',
+    tekniker: 'bg-sky-100 text-sky-700',
+    uzman: 'bg-slate-100 text-slate-600',
+  };
+  return <span className={`badge ${styles[role]}`}>{roleLabel(role)}</span>;
 }
 
 function initials(name: string): string {

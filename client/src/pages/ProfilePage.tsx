@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api';
 import { useAuth } from '../auth';
-import type { Position, Trip, User } from '../types';
-import { POSITIONS } from '../types';
+import type { Trip, User } from '../types';
+import { roleLabel } from '../types';
 import { COUNTRIES, findCountry, flagFor } from '../countries';
+import QuickLocationButton from '../components/QuickLocationButton';
 
 const TODAY = () => new Date().toISOString().slice(0, 10);
 
@@ -16,11 +17,9 @@ export default function ProfilePage() {
   const [profileMsg, setProfileMsg] = useState<string | null>(null);
   const [profileForm, setProfileForm] = useState<{
     full_name: string;
-    position: Position;
     email: string;
   }>({
     full_name: user?.full_name ?? '',
-    position: (user?.position ?? 'Uzman') as Position,
     email: user?.email ?? '',
   });
 
@@ -103,7 +102,6 @@ export default function ProfilePage() {
         method: 'PATCH',
         body: JSON.stringify({
           full_name: profileForm.full_name,
-          position: profileForm.position,
           email: profileForm.email.trim() || null,
         }),
       });
@@ -204,23 +202,8 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label className="label">Pozisyon</label>
-            <select
-              className="input"
-              value={profileForm.position}
-              onChange={(e) =>
-                setProfileForm((f) => ({
-                  ...f,
-                  position: e.target.value as Position,
-                }))
-              }
-            >
-              {POSITIONS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
+            <label className="label">Rol</label>
+            <input className="input bg-slate-50 text-slate-500" value={roleLabel(user?.role)} disabled readOnly />
           </div>
           <div>
             <label className="label">E-posta (opsiyonel)</label>
@@ -285,6 +268,16 @@ export default function ProfilePage() {
           >
             + Yeni Konum
           </button>
+        </div>
+
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50/60 p-4">
+          <div>
+            <div className="text-sm font-semibold text-brand-800">Hızlı konum güncelleme</div>
+            <p className="text-xs text-brand-700/80">
+              Tek dokunuşla bulunduğun yeri GPS'ten paylaş — uğraşmadan.
+            </p>
+          </div>
+          <QuickLocationButton onUpdated={reload} />
         </div>
 
         {error && (

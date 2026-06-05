@@ -6,8 +6,6 @@ import { requireAuth, signToken } from '../auth.js';
 
 const router = Router();
 
-export const POSITIONS = ['Müdür', 'Uzman', 'Mühendis', 'Teknisyen', 'Stajyer'] as const;
-
 const registerSchema = z.object({
   username: z.string().min(2).max(32).regex(/^[a-zA-Z0-9._-]+$/),
   sicil: z.string().min(1).max(32).regex(/^[a-zA-Z0-9._/-]+$/),
@@ -38,7 +36,7 @@ router.post('/register', async (req, res) => {
   const hash = bcrypt.hashSync(password, 10);
   const rows = (await sql`
     INSERT INTO users (username, sicil, email, password_hash, full_name, role)
-    VALUES (${username}, ${sicil}, NULL, ${hash}, ${username}, 'member')
+    VALUES (${username}, ${sicil}, NULL, ${hash}, ${username}, 'uzman')
     RETURNING *
   `) as UserRow[];
   const user = rows[0];

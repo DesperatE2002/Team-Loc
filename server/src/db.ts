@@ -1,5 +1,6 @@
 import { neon, neonConfig } from '@neondatabase/serverless';
 import bcrypt from 'bcryptjs';
+import type { Role } from './roles.js';
 
 neonConfig.fetchConnectionCache = true;
 
@@ -20,7 +21,7 @@ export type UserRow = {
   title: string | null;
   position: string | null;
   avatar_url: string | null;
-  role: 'admin' | 'member';
+  role: Role;
   created_at: string;
 };
 
@@ -87,6 +88,12 @@ export async function ensureSchema(): Promise<void> {
   await sql`ALTER TABLE users ALTER COLUMN email DROP NOT NULL`;
   // Sicil benzersiz olmalı (NULL'lar hariç)
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_sicil ON users(sicil) WHERE sicil IS NOT NULL`;
+
+  // Rol modeli: admin / mudur / tekniker / uzman. Eski 'member' kayıtlarını dönüştür.
+  await sql`ALTER TABLE users ALTER COLUMN role SET DEFAULT 'uzman'`;
+  await sql`UPDATE users SET role = 'mudur' WHERE role = 'member' AND position = 'Müdür'`;
+  await sql`UPDATE users SET role = 'tekniker' WHERE role = 'member' AND position IN ('Teknisyen', 'Tekniker')`;
+  await sql`UPDATE users SET role = 'uzman' WHERE role = 'member'`;
 
   // Varsayılan admin hesabını oluştur (yoksa). Şifre env'den okunur, yoksa 'admin123'.
   const adminUser = process.env.ADMIN_USERNAME || 'admin';

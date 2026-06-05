@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
+import { isManager, roleLabel } from '../types';
 
 const baseLinks = [
   { to: '/', label: 'Panel', end: true },
@@ -11,7 +12,7 @@ export default function Layout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const links =
-    user?.role === 'admin'
+    isManager(user?.role)
       ? [...baseLinks, { to: '/yonetim', label: 'Yönetim' }]
       : baseLinks;
   return (
@@ -55,7 +56,7 @@ export default function Layout() {
             <div className="hidden sm:block text-right leading-tight">
               <div className="text-sm font-semibold">{user?.full_name}</div>
               <div className="text-[11px] uppercase tracking-wider text-slate-400">
-                {user?.position ?? 'Kullanıcı'}
+                {roleLabel(user?.role)}
               </div>
             </div>
             <div className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-100 text-brand-700 font-bold">
