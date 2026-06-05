@@ -37,7 +37,7 @@ router.get('/team', async (_req, res) => {
 const updateMeSchema = z.object({
   full_name: z.string().min(2).max(80).optional(),
   position: z.enum(POSITIONS).nullable().optional(),
-  email: z.string().email().optional(),
+  email: z.union([z.string().email(), z.literal('')]).nullable().optional(),
   avatar_url: z
     .string()
     .max(2_000_000)
@@ -65,7 +65,7 @@ router.patch('/me', async (req, res) => {
   const next = {
     full_name: data.full_name ?? u.full_name,
     position: data.position !== undefined ? data.position : u.position,
-    email: data.email ?? u.email,
+    email: data.email !== undefined ? (data.email || null) : u.email,
     avatar_url: data.avatar_url !== undefined ? data.avatar_url : u.avatar_url,
   };
 

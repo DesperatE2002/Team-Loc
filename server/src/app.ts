@@ -3,6 +3,7 @@ import cors from 'cors';
 import authRouter from './routes/auth.js';
 import usersRouter from './routes/users.js';
 import tripsRouter from './routes/trips.js';
+import adminRouter from './routes/admin.js';
 import { ensureSchema } from './db.js';
 
 export function createApp() {
@@ -26,6 +27,7 @@ export function createApp() {
   app.use('/api/auth', authRouter);
   app.use('/api/users', usersRouter);
   app.use('/api/trips', tripsRouter);
+  app.use('/api/admin', adminRouter);
 
   app.use(
     (

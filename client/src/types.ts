@@ -1,15 +1,21 @@
 export const POSITIONS = ['Müdür', 'Uzman', 'Mühendis', 'Teknisyen', 'Stajyer'] as const;
 export type Position = (typeof POSITIONS)[number];
 
+export type Role = 'admin' | 'member';
+
 export type User = {
   id: number;
   username: string;
-  email: string;
+  sicil: string | null;
+  email: string | null;
   full_name: string;
   position: Position | null;
   avatar_url: string | null;
+  role: Role;
   created_at: string;
 };
+
+export type AdminUser = User & { trip_count: number };
 
 export type Trip = {
   id: number;

@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
 
-const links = [
+const baseLinks = [
   { to: '/', label: 'Panel', end: true },
   { to: '/profil', label: 'Profilim' },
   { to: '/gecmis', label: 'Geçmiş' },
@@ -10,6 +10,10 @@ const links = [
 export default function Layout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const links =
+    user?.role === 'admin'
+      ? [...baseLinks, { to: '/yonetim', label: 'Yönetim' }]
+      : baseLinks;
   return (
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/80 backdrop-blur">

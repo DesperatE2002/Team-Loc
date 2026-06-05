@@ -37,12 +37,16 @@ export async function requireAuth(
   const token = header.slice(7);
   try {
     const payload = jwt.verify(token, JWT_SECRET) as AuthPayload;
-    const rows = (await sql`SELECT id FROM users WHERE id = ${payload.id}`) as { id: number }[];
+    const rows = (await sql`SELECT id, role FROM users WHERE id = ${payload.id}`) as {
+      id: number;
+      role: 'admin' | 'member';
+    }[];
     if (rows.length === 0) {
       res.status(401).json({ error: 'Kullanıcı bulunamadı' });
       return;
     }
-    req.user = payload;
+    // Rolü DB'den taze al (admin rol değişiklikleri anında geçerli olsun)
+    req.user = { ...payload, role: rows[0].role };
     next();
   } catch {
     res.status(401).json({ error: 'Geçersiz token' });

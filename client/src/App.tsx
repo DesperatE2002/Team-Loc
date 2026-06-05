@@ -4,6 +4,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import HistoryPage from './pages/HistoryPage';
+import AdminPage from './pages/AdminPage';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './auth';
@@ -31,6 +32,14 @@ export default function App() {
         <Route index element={<DashboardPage />} />
         <Route path="profil" element={<ProfilePage />} />
         <Route path="gecmis" element={<HistoryPage />} />
+        <Route
+          path="yonetim"
+          element={
+            <ProtectedRoute requireAdmin>
+              <AdminPage />
+            </ProtectedRoute>
+          }
+        />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

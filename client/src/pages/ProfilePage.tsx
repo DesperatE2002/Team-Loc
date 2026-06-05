@@ -104,7 +104,7 @@ export default function ProfilePage() {
         body: JSON.stringify({
           full_name: profileForm.full_name,
           position: profileForm.position,
-          email: profileForm.email,
+          email: profileForm.email.trim() || null,
         }),
       });
       await refresh();
@@ -223,7 +223,7 @@ export default function ProfilePage() {
             </select>
           </div>
           <div>
-            <label className="label">E-posta</label>
+            <label className="label">E-posta (opsiyonel)</label>
             <input
               type="email"
               className="input"
@@ -231,7 +231,6 @@ export default function ProfilePage() {
               onChange={(e) =>
                 setProfileForm((f) => ({ ...f, email: e.target.value }))
               }
-              required
             />
           </div>
           <div className="flex items-end gap-2">

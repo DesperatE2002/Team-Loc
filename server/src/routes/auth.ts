@@ -10,10 +10,8 @@ export const POSITIONS = ['Müdür', 'Uzman', 'Mühendis', 'Teknisyen', 'Stajyer
 
 const registerSchema = z.object({
   username: z.string().min(2).max(32).regex(/^[a-zA-Z0-9._-]+$/),
-  email: z.string().email(),
+  sicil: z.string().min(1).max(32).regex(/^[a-zA-Z0-9._/-]+$/),
   password: z.string().min(3).max(128),
-  full_name: z.string().min(2).max(80),
-  position: z.enum(POSITIONS).optional(),
 });
 
 const loginSchema = z.object({
@@ -27,20 +25,20 @@ router.post('/register', async (req, res) => {
     res.status(400).json({ error: 'Geçersiz veri', details: parsed.error.flatten() });
     return;
   }
-  const { username, email, password, full_name, position } = parsed.data;
+  const { username, sicil, password } = parsed.data;
 
   const existing = (await sql`
-    SELECT id FROM users WHERE username = ${username} OR email = ${email}
+    SELECT id FROM users WHERE username = ${username} OR sicil = ${sicil}
   `) as { id: number }[];
   if (existing.length > 0) {
-    res.status(409).json({ error: 'Kullanıcı adı veya e-posta zaten kayıtlı' });
+    res.status(409).json({ error: 'Bu kullanıcı adı veya sicil zaten kayıtlı' });
     return;
   }
 
   const hash = bcrypt.hashSync(password, 10);
   const rows = (await sql`
-    INSERT INTO users (username, email, password_hash, full_name, position, role)
-    VALUES (${username}, ${email}, ${hash}, ${full_name}, ${position ?? null}, 'member')
+    INSERT INTO users (username, sicil, email, password_hash, full_name, role)
+    VALUES (${username}, ${sicil}, NULL, ${hash}, ${username}, 'member')
     RETURNING *
   `) as UserRow[];
   const user = rows[0];
@@ -57,11 +55,11 @@ router.post('/login', async (req, res) => {
   }
   const { username, password } = parsed.data;
   const rows = (await sql`
-    SELECT * FROM users WHERE username = ${username} OR email = ${username}
+    SELECT * FROM users WHERE username = ${username} OR sicil = ${username}
   `) as UserRow[];
   const user = rows[0];
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
-    res.status(401).json({ error: 'Kullanıcı adı veya şifre hatalı' });
+    res.status(401).json({ error: 'Kullanıcı adı/sicil veya şifre hatalı' });
     return;
   }
   const token = signToken(user);
@@ -77,10 +75,12 @@ export function publicUser(u: UserRow) {
   return {
     id: u.id,
     username: u.username,
-    email: u.email,
+    sicil: u.sicil ?? null,
+    email: u.email ?? null,
     full_name: u.full_name,
     position: u.position ?? null,
     avatar_url: u.avatar_url ?? null,
+    role: u.role,
     created_at: u.created_at,
   };
 }

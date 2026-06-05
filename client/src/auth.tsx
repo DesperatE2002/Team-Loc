@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { api, getToken, setToken } from './api';
-import type { Position, User } from './types';
+import type { User } from './types';
 
 type AuthContextValue = {
   user: User | null;
@@ -21,10 +21,8 @@ type AuthContextValue = {
 
 export type RegisterPayload = {
   username: string;
-  email: string;
+  sicil: string;
   password: string;
-  full_name: string;
-  position?: Position;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);

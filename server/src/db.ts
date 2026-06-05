@@ -1,4 +1,5 @@
 import { neon, neonConfig } from '@neondatabase/serverless';
+import bcrypt from 'bcryptjs';
 
 neonConfig.fetchConnectionCache = true;
 
@@ -12,7 +13,8 @@ export const sql = neon(url);
 export type UserRow = {
   id: number;
   username: string;
-  email: string;
+  sicil: string | null;
+  email: string | null;
   password_hash: string;
   full_name: string;
   title: string | null;
@@ -80,6 +82,22 @@ export async function ensureSchema(): Promise<void> {
   // Eski DB için kolon migration'ları (idempotent)
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS position TEXT`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS sicil TEXT`;
+  // Artık e-posta zorunlu değil
+  await sql`ALTER TABLE users ALTER COLUMN email DROP NOT NULL`;
+  // Sicil benzersiz olmalı (NULL'lar hariç)
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_sicil ON users(sicil) WHERE sicil IS NOT NULL`;
+
+  // Varsayılan admin hesabını oluştur (yoksa). Şifre env'den okunur, yoksa 'admin123'.
+  const adminUser = process.env.ADMIN_USERNAME || 'admin';
+  const adminSicil = process.env.ADMIN_SICIL || '0000';
+  const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
+  const adminHash = bcrypt.hashSync(adminPass, 10);
+  await sql`
+    INSERT INTO users (username, sicil, email, password_hash, full_name, role)
+    VALUES (${adminUser}, ${adminSicil}, NULL, ${adminHash}, 'Yönetici', 'admin')
+    ON CONFLICT (username) DO NOTHING
+  `;
 
   initialized = true;
 }

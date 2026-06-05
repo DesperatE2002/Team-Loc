@@ -34,7 +34,7 @@ export default function LoginPage() {
       </p>
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <div>
-          <label className="label">Kullanıcı adı veya e-posta</label>
+          <label className="label">Kullanıcı adı veya sicil</label>
           <input
             className="input"
             value={username}
