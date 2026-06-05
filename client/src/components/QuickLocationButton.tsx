@@ -154,7 +154,12 @@ async function reverseGeocode(lat: number, lng: number): Promise<Resolved> {
 function messageFor(err: unknown): string {
   if (err && typeof err === 'object' && 'code' in err) {
     const code = (err as GeolocationPositionError).code;
-    if (code === 1) return 'Konum izni reddedildi. Tarayıcı ayarlarından izin verebilirsin.';
+    if (code === 1) {
+      const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      return ios
+        ? 'Konum engelli. Ayarlar → Gizlilik → Konum Servisleri → Safari Siteleri ⇒ “Sorarken İzin Ver”; sonra adres çubuğundaki “ᴀA → Web Sitesi Ayarları → Konum → İzin Ver”.'
+        : 'Konum izni reddedildi. Tarayıcı adres çubuğundaki kilit simgesinden izin verebilirsin.';
+    }
     if (code === 2) return 'Konum alınamadı. Sinyal/servis kapalı olabilir.';
     if (code === 3) return 'Konum zaman aşımına uğradı, tekrar dene.';
   }
