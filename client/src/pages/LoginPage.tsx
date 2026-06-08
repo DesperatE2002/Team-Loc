@@ -85,6 +85,9 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           <div className="text-2xl font-extrabold text-brand-700">SSH Location</div>
         </div>
         <div className="card p-8">{children}</div>
+        <p className="mt-4 text-center text-xs text-slate-400">
+          Şirket içi ekip konum takip aracı · Yalnızca yetkili kullanıcılar içindir.
+        </p>
       </div>
     </div>
   );
